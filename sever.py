@@ -20,26 +20,41 @@ def handle_client(client_socket, client_address):
         user_n = current_user_number
         current_user_number += 1
 
-    print(f"User {user_n} from {client_address} using JKPQ Protocol")
+    send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(f"[{send_time}] User {user_n} from {client_address} using JKPQ Protocol")
     
     selected_board = None
 
-    while True:
-        try:
-            selected_movie_idx = int(decrypt_message(client_socket.recv(1024)).strip()) - 1
+    def select_movie():
+        while True:
+            try:
+                data = decrypt_message(client_socket.recv(1024))
+                receive_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                print(f"[{receive_time}] Received from client {client_address}: {data}")
 
-            if selected_movie_idx < 0 or selected_movie_idx >= len(movies):
-                client_socket.sendall(encrypt_message("405 ERROR Invalid selection. Please try again.\n"))
-            else:
-                selected_movie = list(movies.keys())[selected_movie_idx]
-                selected_board = movies[selected_movie]
-                board_str = print_board(selected_board)
-                client_socket.sendall(encrypt_message(f"204 OK You selected: {selected_movie}\n\n{board_str}"))
-                break  
-        except ValueError:
-            client_socket.sendall(encrypt_message("406 ERROR Invalid input. Please enter a number.\n"))
+                selected_movie_idx = int(data.strip()) - 1
 
-    print(f"User {user_n} selected {selected_movie}")
+                if selected_movie_idx < 0 or selected_movie_idx >= len(movies):
+                    response = "405 ERROR Invalid selection. Please try again.\n"
+                    client_socket.sendall(encrypt_message(response))
+                    send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    print(f"[{send_time}] Sent to client {client_address}: {response}")
+                else:
+                    selected_movie = list(movies.keys())[selected_movie_idx]
+                    selected_board = movies[selected_movie]
+                    board_str = print_board(selected_board)
+                    response = f"204 OK You selected: {selected_movie}\n\n{board_str}"
+                    client_socket.sendall(encrypt_message(response))
+                    send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    print(f"[{send_time}] Sent Movie to client {client_address}")
+                    return selected_board  # Return the selected board
+            except ValueError:
+                response = "406 ERROR Invalid input. Please enter a number.\n"
+                client_socket.sendall(encrypt_message(response))
+                send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                print(f"[{send_time}] Sent to client {client_address}: {response}")
+
+    selected_board = select_movie()  # Select movie initially
 
     while True:
         data = decrypt_message(client_socket.recv(1024))
@@ -70,29 +85,47 @@ def handle_client(client_socket, client_address):
             except (ValueError, IndexError):
                 response = "403 ERROR Invalid command format"
                 client_socket.sendall(encrypt_message(response))
+                send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                print(f"[{send_time}] Sent to client {client_address}: {response}")
+                continue
+        elif data.lower() == "change":
+            response = "204 OK Changing movie selection..."
+            movie_selection_message = "Select a movie:\n"
+            for idx, movie in enumerate(movies.keys(), 1):
+                movie_selection_message += f"{idx}. {movie}\n"  
+            client_socket.sendall(encrypt_message(f"{response}\n\n{movie_selection_message}"))
+            send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            print(f"[{send_time}] Sent to client {client_address}: {response}")
+            selected_board = select_movie()  # Allow the user to change the movie
+            continue  # Skip to the next iteration to avoid sending the board string yet
+
         elif data.lower() == "quit":
             response = "202 OK Connection closed"
             client_socket.sendall(encrypt_message(response))
+            send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            print(f"[{send_time}] Sent to client {client_address}: {response}")
             break
         elif data.lower() == "shutdown":
             response = "203 OK Server shutting down"
             client_socket.sendall(encrypt_message(response))
+            send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            print(f"[{send_time}] Sent to client {client_address}: {response}")
             client_socket.close()
             print("Server is shutting down...")
             server_socket.close()
             return
         else:
             response = "400 ERROR Invalid command"
+            client_socket.sendall(encrypt_message(response))
+            send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            print(f"[{send_time}] Sent to client {client_address}: {response}")
 
         send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         client_socket.sendall(encrypt_message(f"{response}\n\n{board_str}"))
-
         print(f"[{send_time}] Sent to client {client_address}: {response}")
-        
 
     client_socket.close()
     print(f"Connection with {client_address} closed")
-
 
 def start_server(host='localhost', port=12345):
     global server_socket

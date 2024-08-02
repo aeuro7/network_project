@@ -1,5 +1,6 @@
 from encrypt import encrypt_message
 from encrypt import decrypt_message
+from datetime import datetime
 
 users = {
     "user1": "password1",
@@ -20,14 +21,23 @@ def login(client_socket):
     username = decrypt_message(encrypted_username)
     password = decrypt_message(encrypted_password)
 
-    # Validate username and password
     if username in users and users[username] == password:
         movie_selection_message = "Select a movie:\n"
         for idx, movie in enumerate(movies.keys(), 1):
-            movie_selection_message += f"{idx}. {movie}\n"        
+            movie_selection_message += f"{idx}. {movie}\n"
 
-        client_socket.sendall(encrypt_message(f"200 OK Login successful\n{movie_selection_message}"))
+        response = f"200 OK Login successful\n\n{movie_selection_message}"
+        client_socket.sendall(encrypt_message(response))
+        
+        send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print(f"[{send_time}] Sent to client 200 OK Login successful and list of movies")
+        
         return True
     else:
-        client_socket.sendall(encrypt_message("404 Forbidden Login failed"))
+        response = "404 Forbidden Login failed"
+        client_socket.sendall(encrypt_message(response))
+        
+        send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print(f"[{send_time}] Sent to client: {response}")
+        
         return False
