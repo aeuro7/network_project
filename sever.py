@@ -5,7 +5,6 @@ from security import login, movies
 from board import print_board
 from encrypt import encrypt_message, decrypt_message
 
-# Initialize a lock for thread-safe increment of user number
 user_number_lock = threading.Lock()
 current_user_number = 1
 
@@ -16,7 +15,7 @@ def handle_client(client_socket, client_address):
         client_socket.close()
         return
 
-    with user_number_lock:  # Lock this section to safely increment the user number
+    with user_number_lock: 
         user_n = current_user_number
         current_user_number += 1
 
