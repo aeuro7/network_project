@@ -79,14 +79,16 @@ def handle_client(client_socket, client_address):
                 else:
                     response = "402 ERROR Position out of bounds"
 
-                board_str = print_board(selected_board)
-
             except (ValueError, IndexError):
                 response = "403 ERROR Invalid command format"
-                client_socket.sendall(encrypt_message(response))
-                send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                print(f"[{send_time}] Sent to client {client_address}: {response}")
-                continue
+            
+            # อัพเดตบอร์ดหลังจากคำสั่ง
+            board_str = print_board(selected_board)
+            client_socket.sendall(encrypt_message(f"{response}\n\n{board_str}"))
+            send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            print(f"[{send_time}] Sent to client {client_address}: {response}")
+            continue
+
         elif data.lower() == "change":
             response = "204 OK Changing movie selection..."
             movie_selection_message = "Select a movie:\n"
@@ -115,13 +117,11 @@ def handle_client(client_socket, client_address):
             return
         else:
             response = "400 ERROR Invalid command"
-            client_socket.sendall(encrypt_message(response))
+            # อัพเดตบอร์ดหลังจากคำสั่งผิดพลาด
+            board_str = print_board(selected_board)
+            client_socket.sendall(encrypt_message(f"{response}\n\n{board_str}"))
             send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             print(f"[{send_time}] Sent to client {client_address}: {response}")
-
-        send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        client_socket.sendall(encrypt_message(f"{response}\n\n{board_str}"))
-        print(f"[{send_time}] Sent to client {client_address}: {response}")
 
     client_socket.close()
     print(f"Connection with {client_address} closed")
