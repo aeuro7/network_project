@@ -21,7 +21,7 @@ def protocol_client(client_socket, client_address):
         current_user_number += 1
 
     send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(f"[{send_time}] User {user_n} from {client_address} using JKPQ Protocol")
+    print(f"[{send_time}] User {user_n} from {client_address} using 6510450399 Protocol")
     
     selected_board = None
 
