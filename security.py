@@ -26,7 +26,7 @@ def login(client_socket):
         for idx, movie in enumerate(movies.keys(), 1):
             movie_selection_message += f"{idx}. {movie}\n"
 
-        response = f"200 OK Login successful\n\n{movie_selection_message}"
+        response = f"200_OK Login successful\n\n{movie_selection_message}"
         client_socket.sendall(encrypt_message(response))
         
         send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')

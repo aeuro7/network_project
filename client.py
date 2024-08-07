@@ -1,6 +1,7 @@
 import socket
 from datetime import datetime
 from encrypt import encrypt_message, decrypt_message
+from protocol import protocol_handler
 
 def start_client(host='localhost', port=12345):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -15,7 +16,8 @@ def start_client(host='localhost', port=12345):
 
     encrypted_login_response = client_socket.recv(1024)
     login_response = decrypt_message(encrypted_login_response)
-    print(f"Server response: {login_response}")
+    protocol_handler(login_response)
+    # print(f"Server response: {login_response1}")
 
     if "Login successful" not in login_response:
         print("Login failed. Closing connection.")
@@ -34,8 +36,9 @@ def start_client(host='localhost', port=12345):
 
         encrypted_response = client_socket.recv(1024)
         response = decrypt_message(encrypted_response)
-        receive_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        print(f"[{receive_time}] Received from server: {response}")
+        protocol_handler(response)
+        # receive_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        # print(f"[{receive_time}] Received from server: {response}")
 
     client_socket.close()
 
