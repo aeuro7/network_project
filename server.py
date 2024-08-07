@@ -9,7 +9,7 @@ from protocol import protocol_handler
 user_number_lock = threading.Lock()
 current_user_number = 1
 
-def handle_client(client_socket, client_address):
+def protocol_client(client_socket, client_address):
     global current_user_number
 
     if not login(client_socket):
@@ -36,23 +36,25 @@ def handle_client(client_socket, client_address):
 
                 if selected_movie_idx < 0 or selected_movie_idx >= len(movies):
                     response = "405_ERROR_Invalid_selection_Please_try_again\n"
-                    client_socket.sendall(encrypt_message(response))
-                    send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    print(f"[{send_time}] Sent to client {client_address}: {response}")
+                    status_number = "405"
                 else:
                     selected_movie = list(movies.keys())[selected_movie_idx]
                     selected_board = movies[selected_movie]
                     board_str = print_board(selected_board)
                     response = f"204_OK_You_selected:{selected_movie}\n\n{board_str}"
-                    client_socket.sendall(encrypt_message(response))
-                    send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    print(f"[{send_time}] Sent Movie to client {client_address}")
+                    status_number = "204"
+                
+                client_socket.sendall(encrypt_message(response))
+                send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                print(f"[{send_time} {status_number}] Sent to client {client_address}: {response}")
+                if selected_movie_idx >= 0 and selected_movie_idx < len(movies):
                     return selected_board  # Return the selected board
             except ValueError:
                 response = "406_ERROR_Invalid_input_Please_enter_a_number\n"
+                status_number = "406"
                 client_socket.sendall(encrypt_message(response))
                 send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                print(f"[{send_time}] Sent to client {client_address}: {response}")
+                print(f"[{send_time} {status_number}] Sent to client {client_address}: {response}")
 
     selected_board = select_movie()  # Select movie initially
 
@@ -75,68 +77,76 @@ def handle_client(client_socket, client_address):
                     if selected_board[row][col] == 'o':
                         selected_board[row][col] = 'x'
                         response = f"201_OK_Position_({row_label},{col + 1})_updated_to_'X'"
+                        status_number = "201"
                     else:
                         response = f"401_ERROR_Position_({row_label},{col + 1})_already_taken"
+                        status_number = "401"
                 else:
                     response = "402_ERROR_Position_out_of_bounds"
+                    status_number = "402"
 
             except (ValueError, IndexError):
                 response = "403_ERROR_Invalid_command_format"
+                status_number = "403"
             
-            # อัพเดตบอร์ดหลังจากคำสั่ง
+            # Update board after command
             board_str = print_board(selected_board)
             client_socket.sendall(encrypt_message(f"{response}\n\n{board_str}"))
             send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            print(f"[{send_time}] Sent to client {client_address}: {response}")
+            print(f"[{send_time} {status_number}] Sent to client {client_address}: {response}")
             continue
 
         elif data.lower() == "change":
-            response = "204_OK_Changing_movie_selection..."
+            response = "205_OK_Changing_movie_selection..."
+            status_number = "205"
             movie_selection_message = "Select_a_movie:\n"
             for idx, movie in enumerate(movies.keys(), 1):
                 movie_selection_message += f"{idx}. {movie}\n"  
             client_socket.sendall(encrypt_message(f"{response}\n\n{movie_selection_message}"))
             send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            print(f"[{send_time}] Sent to client {client_address}: {response}")
+            print(f"[{send_time} {status_number}] Sent to client {client_address}: {response}")
             selected_board = select_movie()  # Allow the user to change the movie
             continue  # Skip to the next iteration to avoid sending the board string yet
 
         elif data.lower() == "quit":
             response = "202_OK_Connection_closed"
+            status_number = "202"
             client_socket.sendall(encrypt_message(response))
             send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            print(f"[{send_time}] Sent to client {client_address}: {response}")
+            print(f"[{send_time} {status_number}] Sent to client {client_address}: {response}")
             break
         elif data.lower() == "shutdown":
             response = "203_OK_Server_shutting_down"
+            status_number = "203"
             client_socket.sendall(encrypt_message(response))
             send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            print(f"[{send_time}] Sent to client {client_address}: {response}")
+            print(f"[{send_time} {status_number}] Sent to client {client_address}: {response}")
             client_socket.close()
             print("Server is shutting down...")
             server_socket.close()
             return
         else:
             response = "400_ERROR_Invalid_command"
-            # อัพเดตบอร์ดหลังจากคำสั่งผิดพลาด
+            status_number = "400"
             board_str = print_board(selected_board)
             client_socket.sendall(encrypt_message(f"{response}\n\n{board_str}"))
             send_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            print(f"[{send_time}] Sent to client {client_address}: {response}")
+            print(f"[{send_time} {status_number}] Sent to client {client_address}: {response}")
 
     client_socket.close()
     print(f"Connection with {client_address} closed")
+
 
 def start_server(host='localhost', port=12345):
     global server_socket
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((host, port))
     server_socket.listen(4)
-    print("Server started using JKPQ Protocol, waiting for clients...")
+    print("Server started using 6510450399 Protocol, waiting for clients...")
 
     while True:
         client_socket, client_address = server_socket.accept()
-        client_thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
+        client_thread = threading.Thread(target=protocol_client, args=(client_socket, client_address))
         client_thread.start()
 
 if __name__ == "__main__":

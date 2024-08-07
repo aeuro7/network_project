@@ -37,8 +37,6 @@ def start_client(host='localhost', port=12345):
         encrypted_response = client_socket.recv(1024)
         response = decrypt_message(encrypted_response)
         protocol_handler(response)
-        # receive_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        # print(f"[{receive_time}] Received from server: {response}")
 
     client_socket.close()
 

@@ -15,31 +15,33 @@ def protocol_handler(protocol_message):
     
     # Handle different response codes
     if response_code == "200":
-        print(f"[{current_time}] Server response: 200 OK Login successful \n{additional_info}")
+        print(f"[{current_time}]Server response:  200 OK Login successful: \n{additional_info}")
     elif response_code == "204":
-        print(f"[{current_time}] 204 OK You selected:\n{additional_info}")
+        print(f"[{current_time}]Server response:  204 OK You selected: \n{additional_info}")
     elif response_code == "201":
-        print(f"[{current_time}] 201 OK Position updated: {additional_info}")
+        print(f"[{current_time}]Server response:  201 OK Position updated: \n{additional_info}")
     elif response_code == "401":
-        print(f"[{current_time}] 401 ERROR Position already taken: {additional_info}")
+        print(f"[{current_time}]Server response:  401 ERROR Position already taken: \n{additional_info}")
     elif response_code == "402":
-        print(f"[{current_time}] 402 ERROR Position out of bounds: {additional_info}")
+        print(f"[{current_time}]Server response:  402 ERROR Position out of bounds: \n{additional_info}")
     elif response_code == "403":
-        print(f"[{current_time}] 403 ERROR Invalid command format: {additional_info}")
+        print(f"[{current_time}]Server response:  403 ERROR Invalid command format: \n{additional_info}")
     elif response_code == "404":
-        print(f"[{current_time}] 404 Forbidden Login failed: {additional_info}")
+        print(f"[{current_time}]Server response:  404 Forbidden Login failed: \n{additional_info}")
     elif response_code == "405":
-        print(f"[{current_time}] 405 ERROR Invalid selection: {additional_info}")
+        print(f"[{current_time}]Server response:  405 ERROR Invalid selection: \n{additional_info}")
     elif response_code == "406":
-        print(f"[{current_time}] 406 ERROR Invalid input: {additional_info}")
+        print(f"[{current_time}]Server response:  406 ERROR Invalid input: \n{additional_info}")
     elif response_code == "202":
-        print(f"[{current_time}] 202 OK Connection closed: {additional_info}")
+        print(f"[{current_time}]Server response:  202 OK Connection closed: \n{additional_info}")
     elif response_code == "203":
-        print(f"[{current_time}] 203 OK Server shutting down: {additional_info}")
+        print(f"[{current_time}]Server response:  203 OK Server shutting down: \n{additional_info}")
     elif response_code == "400":
-        print(f"[{current_time}] 400 ERROR Invalid command: {additional_info}")
+        print(f"[{current_time}]Server response:  400 ERROR Invalid command: \n{additional_info}")
+    elif response_code == "205":
+        print(f"[{current_time}]Server response:  205 OK Changing movie selection... \n{additional_info}")
     else:
-        print(f"[{current_time}] Unknown response code: {response_code}")
+        print(f"[{current_time}]Server response:  Unknown response code: {response_code}")
 
 # Example usage:
 # protocol_message = "200_EURO"
